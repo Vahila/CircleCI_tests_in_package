@@ -1,0 +1,29 @@
+version: 2.1
+
+orbs:
+    node: circleci/node@4.7
+
+jobs:
+    build-and-test:
+        docker:
+            - image: cimg/node:16.10
+        parallelism: 2
+        steps:
+          - matlab/install:
+              no-output-timeout: 30m
+
+          - matlab/run-tests:
+              # select-by-name: $(circleci tests glob "tests/**/*.m" | awk -F'[\\\\/.]' '{print $(NF-1)}' | sort | uniq | circleci tests split --split-by=timings | awk '{print $0 "/*"}')
+              source-folder: src
+              test-results-junit: test-results/results.xml
+          
+          - run:
+            command: cat test-results/results.xml
+            
+          - store_test_results:
+              path: test-results/results.xml              
+
+workflows:
+    sample:
+      jobs:
+        - build-and-test
